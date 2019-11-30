@@ -5,5 +5,5 @@ expiringdict==1.1.4
 # opencv_python==3.4.1.15
 # opencv_python_contrib==3.4.1.15
 SQLAlchemy==1.2.10
-PyYAML==3.13
+PyYAML==5.1
 psycopg2==2.7.5
