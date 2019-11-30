@@ -1,0 +1,8 @@
+branch: master
+image_name: t28-tag-tracker-refactored
+image_tag: $CI_COMMIT_REF_SLUG
+namespace: fops-project
+db_host: fops-postgres
+db_database: cvt28_v2
+db_secretName: fops-db
+registry: $REGISTRY

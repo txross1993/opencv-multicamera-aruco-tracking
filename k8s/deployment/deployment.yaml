@@ -1,0 +1,228 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: t28-tag-tracker
+  namespace: {{ namespace }}
+  labels:
+    app: t28-{{ branch }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: t28-{{ branch }}
+  template:
+    metadata:
+      labels: 
+        app: t28-{{ branch }}
+    spec:
+      containers:
+      - name: t28
+        image: {{ registry }}:{{ image_tag }}
+        imagePullPolicy: Always
+        env:
+          - name: STREAM_SLEEP
+            valueFrom:
+              configMapKeyRef:
+                # The ConfigMap containing the value you want to assign to SPECIAL_LEVEL_KEY
+                name: t28
+                # Specify the key associated with the value
+                key: stream.sleep
+          - name: READ_SLEEP
+            valueFrom:
+              configMapKeyRef:
+                # The ConfigMap containing the value you want to assign to SPECIAL_LEVEL_KEY
+                name: t28
+                # Specify the key associated with the value
+                key: read.sleep
+          - name: PROCESSOR_SLEEP
+            valueFrom:
+              configMapKeyRef:
+                # The ConfigMap containing the value you want to assign to SPECIAL_LEVEL_KEY
+                name: t28
+                # Specify the key associated with the value
+                key: processor.sleep 
+          - name: REPORTER_SLEEP
+            valueFrom:
+              configMapKeyRef:
+                # The ConfigMap containing the value you want to assign to SPECIAL_LEVEL_KEY
+                name: t28
+                # Specify the key associated with the value
+                key: reporter.sleep  
+          - name: REPORTER_BATCH_SIZE
+            valueFrom:
+              configMapKeyRef:
+                # The ConfigMap containing the value you want to assign to SPECIAL_LEVEL_KEY
+                name: t28
+                # Specify the key associated with the value
+                key: reporter.batchsize
+          - name: TABLE_TRACKING
+            valueFrom:
+              configMapKeyRef:
+                name: t28
+                key: table.tracking
+          - name: TABLE_DEVICE
+            valueFrom:
+              configMapKeyRef:
+                name: t28
+                key: table.device
+          - name: TABLE_STREAM
+            valueFrom:
+              configMapKeyRef:
+                name: t28
+                key: table.stream
+          - name: DICT_MAXAGE
+            valueFrom:
+              configMapKeyRef:
+                name: t28
+                key: expiringdict.maxage
+          - name: DICT_MAXLENGTH
+            valueFrom:
+              configMapKeyRef:
+                name: t28
+                key: expiringdict.maxlength
+          - name: MAX_MANAGED_STREAMS
+            valueFrom:
+              configMapKeyRef:
+                name: t28
+                key: max.managedstreams
+          - name: ARUCO_DICT
+            valueFrom:
+              configMapKeyRef:
+                name: t28
+                key: aruco.dictionary
+          - name: ORCHESTRATOR
+            valueFrom:
+              configMapKeyRef:
+                name: t28
+                key: orchestrator.host
+          - name: LOG_LEVEL
+            valueFrom:
+              configMapKeyRef:
+                name: t28
+                key: log.level
+          - name: LOCATION_THRESHOLD
+            valueFrom:
+              configMapKeyRef:
+                name: t28
+                key: location.threshold
+          - name: TS_THRESHOLD
+            valueFrom:
+              configMapKeyRef:
+                name: t28
+                key: timestamp.threshold
+          - name: DB_HOST
+            value: {{ db_host }}
+          - name: DB_PORT
+            value: "5432"
+          - name: DB_DATABASE
+            value: {{ db_database }}
+          - name: DB_USER
+            valueFrom:
+              secretKeyRef:
+                name: {{ db_secretName }}
+                key: user
+          - name: DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ db_secretName }}
+                key: pass
+          - name: DEVICE_0_USER
+            valueFrom:
+              secretKeyRef:
+                name: camera-0
+                key: user
+          - name: DEVICE_0_PASS
+            valueFrom:
+              secretKeyRef:
+                name: camera-0
+                key: pass
+          - name: DEVICE_1_USER
+            valueFrom:
+              secretKeyRef:
+                name: camera-1
+                key: user
+          - name: DEVICE_1_PASS
+            valueFrom:
+              secretKeyRef:
+                name: camera-1
+                key: pass
+          - name: DEVICE_2_USER
+            valueFrom:
+              secretKeyRef:
+                name: camera-2
+                key: user
+          - name: DEVICE_2_PASS
+            valueFrom:
+              secretKeyRef:
+                name: camera-2
+                key: pass
+          - name: DEVICE_3_USER
+            valueFrom:
+              secretKeyRef:
+                name: camera-3
+                key: user
+          - name: DEVICE_3_PASS
+            valueFrom:
+              secretKeyRef:
+                name: camera-3
+                key: pass
+          - name: DEVICE_4_USER
+            valueFrom:
+              secretKeyRef:
+                name: camera-4
+                key: user
+          - name: DEVICE_4_PASS
+            valueFrom:
+              secretKeyRef:
+                name: camera-4
+                key: pass
+          - name: DEVICE_5_USER
+            valueFrom:
+              secretKeyRef:
+                name: camera-5
+                key: user
+          - name: DEVICE_5_PASS
+            valueFrom:
+              secretKeyRef:
+                name: camera-5
+                key: pass
+          - name: DEVICE_6_USER
+            valueFrom:
+              secretKeyRef:
+                name: camera-6
+                key: user
+          - name: DEVICE_6_PASS
+            valueFrom:
+              secretKeyRef:
+                name: camera-6
+                key: pass
+          - name: DEVICE_7_USER
+            valueFrom:
+              secretKeyRef:
+                name: camera-7
+                key: user
+          - name: DEVICE_7_PASS
+            valueFrom:
+              secretKeyRef:
+                name: camera-7
+                key: pass
+          - name: DEVICE_8_USER
+            valueFrom:
+              secretKeyRef:
+                name: camera-8
+                key: user
+          - name: DEVICE_8_PASS
+            valueFrom:
+              secretKeyRef:
+                name: camera-8
+                key: pass
+          - name: DEVICE_9_USER
+            valueFrom:
+              secretKeyRef:
+                name: camera-9
+                key: user
+          - name: DEVICE_9_PASS
+            valueFrom:
+              secretKeyRef:
+                name: camera-9
+                key: pass

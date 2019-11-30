@@ -1,0 +1,115 @@
+image: docker:latest
+
+variables:
+  GIT_SSL_NO_VERIFY: "true"
+  DB_HOST: "$DB_HOST"
+  DB_USER: "$DB_USER"
+  DB_PASSWORD: "$DB_PASSWORD"
+  DB_PORT: "$DB_PORT"
+  DB_DATABASE: "$DB_DATABASE"
+  TEST_STREAM: "$TEST_STREAM"
+  STREAM_SLEEP: "0.3"
+  READ_SLEEP: "0.4"
+  PROCESSOR_SLEEP: "0.1"
+  REPORTER_SLEEP: "0.1"
+  REPORTER_BATCH_SIZE: "1"
+  TABLE_TRACKING: "rack_trackings"
+  TABLE_DEVICE: "cameras"
+  TABLE_STREAM: "streams"
+  DICT_MAXAGE: "5"
+  DICT_MAXLENGTH: "3000"
+  MAX_MANAGED_STREAMS: "3"
+  ARUCO_DICT: "data/aruco_dictionary/6x6x3000"
+  ORCHESTRATOR: "http://orchestrator"
+  LOG_LEVEL: "INFO"
+  LOCATION_THRESHOLD: "3"
+  TS_THRESHOLD: "3000"
+  
+
+stages:
+  - test
+  - build
+  - push
+  - deploy
+
+Test:
+  stage: test
+  image: 
+    name: jjanzic/docker-python3-opencv:contrib-opencv-3.4.1
+  script:
+    - pip install --upgrade pip
+    - pip install -r app/requirements.txt
+    - pip install nose coverage
+    - nosetests --with-coverage --cover-package=app
+    - coverage report --fail-under=20
+
+Test-Build:
+  stage: build
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
+  script:
+    - "executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --insecure-skip-tls-verify --no-push" #run with --no-push to disable pushing to
+  except:
+    - master
+    - set-dist-to-zero
+
+Push-To-Registry:
+  stage: push
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
+  script:
+    - "executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --destination $REGISTRY:$CI_COMMIT_REF_SLUG --insecure-skip-tls-verify"
+  except:
+    - /^shb-v.*$/
+
+shb-build-docker-image:
+  stage: build
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
+  script:
+    - "executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --destination $SHB_REGISTRY:$CI_COMMIT_REF_SLUG --insecure-skip-tls-verify --build-arg APP_VERSION_NOTE=$CI_COMMIT_MESSAGE"
+  only:
+    - /^shb-v.*$/
+
+
+deploy_docker_app_branches:
+  stage: deploy
+  image:
+    name: $INTERNAL_REGISTRY/fops/etech-kubectl:latest
+  script:
+    - python3 /yaml-renderer.py ./k8s/deployment/dev-params.yaml ./k8s/deployment/deployment.yaml | kubectl apply -f -
+  except:
+    - staging
+    - master
+    - tags
+  
+deploy_staging:
+  stage: deploy
+  image:
+    name: $INTERNAL_REGISTRY/fops/etech-kubectl:latest
+  script:
+    - python3 /yaml-renderer.py ./k8s/deployment/staging-params.yaml ./k8s/deployment/deployment.yaml | kubectl apply -f -
+  only:
+    - staging
+
+deploy:
+  stage: deploy
+  image:
+    name: $INTERNAL_REGISTRY/fops/etech-kubectl:latest
+  script:
+    - python3 /yaml-renderer.py ./k8s/deployment/prod-params.yaml ./k8s/deployment/deployment.yaml | kubectl apply -f -
+  only:
+    - master
+
+shb-deploy-to-k8s:
+  stage: deploy
+  image:
+    name: $INTERNAL_REGISTRY/fops/etech-kubectl:latest
+  script:
+    - echo "${SHB_KUBECONFIG}" > /shb-kubeconfig
+    - python3 /yaml-renderer.py ./k8s/deployment/shb-params.yaml ./k8s/deployment/deployment.yaml | kubectl --kubeconfig=/shb-kubeconfig apply -f -
+  only:
+    - /^shb-v.*$/
