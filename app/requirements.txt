@@ -1,5 +1,5 @@
 mock==2.0.0
-numpy==1.14.2
+numpy==1.22.0
 requests>=2.20.0
 expiringdict==1.1.4
 # opencv_python==3.4.1.15
